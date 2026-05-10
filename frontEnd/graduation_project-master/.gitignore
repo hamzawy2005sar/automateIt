@@ -1,0 +1,86 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may want to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Flutter.xcconfig
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral/
+**/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme
+**/ios/flutter/Flutter.framework
+**/ios/flutter/Flutter.podspec
+**/ios/flutter/Flutter.xcconfig
+**/ios/flutter/flutter_assets/
+**/ios/flutter/flutter_export_environment.sh
+**/ios/flutter/flutter_platform_channel.h
+**/ios/flutter/ios_platform_wrappers.h
+**/ios/flutter/install_ephemeral_dependencies.sh
+**/ios/flutter/local_engine_symlink.txt
+**/ios/flutter/local_engine_symlink.txt.md5
+**/ios/flutter/local_engine_symlink_unix.txt
+**/ios/flutter/local_engine_symlink_unix.txt.md5
+**/ios/flutter/local_engine_symlink_windows.txt
+**/ios/flutter/local_engine_symlink_windows.txt.md5
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+build/
+flutter_*.png
+linked_assertion_message
+pubspec.lock
+
+# Web related
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# iOS/macOS
+**/ios/**/*.mode1v3
+**/ios/**/*.mode2v3
+**/ios/**/*.moved-aside
+**/ios/**/*.pbxuser
+**/ios/**/*.perspectivev3
+**/ios/**/*.xcodeproj/*
+!**/ios/**/*.xcodeproj/project.pbxproj
+!**/ios/**/*.xcodeproj/xcshareddata/
+!**/ios/**/*.xcworkspace/contents.xcworkspacedata
+**/ios/**/*.xcworkspace/*
+!**/ios/**/*.xcworkspace/xcshareddata/
+**/ios/**/.generated/
+**/ios/**/Flutter/Flutter.framework
+**/ios/**/Flutter/Flutter.podspec
+
+# Exceptions to above rules.
+!**/ios/**/default.mode1v3
+!**/ios/**/default.mode2v3
+!**/ios/**/default.pbxuser
+!**/ios/**/default.perspectivev3
+

@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="AutomateIt.API/AutomateIt.API.csproj" />
+  <Project Path="AutomateIt.Core/AutomateIt.Core.csproj" />
+  <Project Path="AutomateIt.Infrastructure/AutomateIt.Infrastructure.csproj" />
+</Solution>

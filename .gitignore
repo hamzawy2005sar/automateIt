@@ -1,0 +1,34 @@
+# .gitignore for AutomateIt Project
+
+# .NET
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+.vscode/
+
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+frontEnd/graduation_project-master/build/
+frontEnd/graduation_project-master/.dart_tool/
+
+# Secrets & Config (Important!)
+# We exclude these to protect API keys. 
+# You will need to add them manually to the server or via Environment Variables.
+AutomateIt.API/appsettings.json
+AutomateIt.API/firebase_service_account.json
+AutomateIt.API/gmail_credentials.json
+AutomateIt.API/token.json/
+
+# OS files
+.DS_Store
+Thumbs.db

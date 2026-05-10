@@ -1,0 +1,21 @@
+erDiagram
+    Automation {
+        uuid Id PK
+        string Name
+        boolean IsActive
+        string TriggerType
+        jsonb TriggerConfig
+        string ActionType
+        jsonb ActionConfig
+        datetime CreatedAt
+    }
+    
+    ExecutionLog {
+        uuid Id PK
+        uuid AutomationId FK
+        string Status
+        string Message
+        datetime ExecutedAt
+    }
+
+    Automation ||--o{ ExecutionLog : has_many

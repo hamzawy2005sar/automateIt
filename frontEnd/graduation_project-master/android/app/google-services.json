@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "185518502233",
+    "project_id": "automateit-9f57d",
+    "storage_bucket": "automateit-9f57d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:185518502233:android:99387ef7fbe098c1741c48",
+        "android_client_info": {
+          "package_name": "automateIt.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_VRev7zwn8SyupbWNyJUhN2cghtGCO9E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
