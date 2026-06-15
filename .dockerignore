@@ -1,0 +1,11 @@
+frontEnd/
+.git/
+.vs/
+.vscode/
+bin/
+obj/
+*.exe
+*.zip
+*.log
+*.txt
+*.bat

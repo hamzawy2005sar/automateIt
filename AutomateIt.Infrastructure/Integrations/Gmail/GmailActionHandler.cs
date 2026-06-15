@@ -8,6 +8,7 @@ using Google.Apis.Services;
 using System.Text;
 using System.Text.Json;
 using AutomateIt.Infrastructure.Integrations.Google;
+using Microsoft.EntityFrameworkCore;
 
 namespace AutomateIt.Infrastructure.Integrations.Gmail;
 
@@ -48,13 +49,55 @@ public class GmailActionHandler : IActionHandler
         _db.EmailApprovals.Add(approval);
         await _db.SaveChangesAsync();
 
-        Console.WriteLine($"✅ Approval saved (Id={approval.Id}) – waiting for user confirmation.");
+        // إرسال إشعار للمستخدم بأن هناك رد مقترح ينتظر موافقته
+        var activeTokens = await _db.FcmTokens
+            .Where(t => t.IsActive)
+            .Select(t => t.Token)
+            .ToListAsync();
+
+        foreach (var token in activeTokens)
+        {
+            try
+            {
+                var firebaseMessage = new FirebaseAdmin.Messaging.Message
+                {
+                    Token = token,
+                    Notification = new FirebaseAdmin.Messaging.Notification
+                    {
+                        Title = "New Email Draft",
+                        Body = $"AI drafted a reply for: {context["subject"]}",
+                    },
+                    Android = new FirebaseAdmin.Messaging.AndroidConfig
+                    {
+                        Priority = FirebaseAdmin.Messaging.Priority.High,
+                        Notification = new FirebaseAdmin.Messaging.AndroidNotification
+                        {
+                            Sound = "default",
+                            ChannelId = "automations",
+                        },
+                    },
+                };
+                await FirebaseAdmin.Messaging.FirebaseMessaging.DefaultInstance.SendAsync(firebaseMessage);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[FCM] Failed to send approval notification: {ex.Message}");
+            }
+        }
+
+        Console.WriteLine($"✅ Approval saved (Id={approval.Id}) and notification sent.");
     }
 
     /// <summary>Called from ApprovalsController when user approves the reply.</summary>
     public async Task SendApprovedEmailAsync(EmailApproval approval)
     {
-        var service = await GetGmailServiceAsync(approval.UserEmail ?? "user");
+        var email = approval.UserEmail;
+        if (string.IsNullOrEmpty(email))
+        {
+            throw new Exception("Approval has no UserEmail assigned.");
+        }
+
+        var service = await GetGmailServiceAsync(email);
         var subject  = $"Re: {approval.Subject}";
         var rawEmail = $"To: {approval.SenderEmail}\r\nSubject: {subject}\r\n\r\n{approval.ProposedReply}";
         var encoded  = Convert.ToBase64String(Encoding.UTF8.GetBytes(rawEmail))
@@ -73,8 +116,10 @@ public class GmailActionHandler : IActionHandler
     {
         try
         {
+            config.TryGetValue("aiRules", out var aiRules);
             return await _groq.GenerateReplyAsync(
-                $"من: {context["from"]}\nالموضوع: {context["subject"]}\n\n{context["body"]}"
+                $"من: {context["from"]}\nالموضوع: {context["subject"]}\n\n{context["body"]}",
+                aiRules
             );
         }
         catch (Exception ex)
@@ -107,7 +152,11 @@ public class GmailActionHandler : IActionHandler
 
     private async Task<GmailService> GetGmailServiceAsync(Automation automation)
     {
-        return await GetGmailServiceAsync(automation.UserEmail ?? "user");
+        if (string.IsNullOrEmpty(automation.UserEmail))
+        {
+            throw new Exception("Automation has no UserEmail assigned.");
+        }
+        return await GetGmailServiceAsync(automation.UserEmail);
     }
 
     private async Task<GmailService> GetGmailServiceAsync(string email)

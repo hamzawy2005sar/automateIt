@@ -26,21 +26,26 @@ public class AuthController : ControllerBase
         _clientId = config["Google:ClientId"] ?? "YOUR_CLIENT_ID";
         _clientSecret = config["Google:ClientSecret"] ?? "YOUR_CLIENT_SECRET";
         _redirectUri = config["Google:RedirectUri"] ?? "http://localhost:5161/api/auth/google/callback";
+
+        Console.WriteLine($"[DEBUG] AuthController initialized.");
+        Console.WriteLine($"[DEBUG] ClientId: {(_clientId.Length > 10 ? _clientId.Substring(0, 10) + "..." : _clientId)}");
+        Console.WriteLine($"[DEBUG] RedirectUri: {_redirectUri}");
     }
 
     [HttpGet("google/login")]
     public IActionResult Login()
     {
-        var scopes = new[] { GmailService.Scope.GmailModify, CalendarService.Scope.CalendarReadonly };
+        var scopes = new[] { "openid", "email", "profile", GmailService.Scope.GmailModify, CalendarService.Scope.CalendarReadonly };
         var authUrl = $"https://accounts.google.com/o/oauth2/v2/auth?" +
                       $"client_id={_clientId}&" +
-                      $"redirect_uri={_redirectUri}&" +
+                      $"redirect_uri={Uri.EscapeDataString(_redirectUri)}&" +
                       $"response_type=code&" +
                       $"scope={string.Join(" ", scopes)}&" +
                       $"access_type=offline&" +
                       $"prompt=consent";
         
-        return Ok(new { url = authUrl });
+        // Redirect directly instead of returning JSON
+        return Redirect(authUrl);
     }
 
     [HttpGet("google/callback")]
@@ -51,12 +56,11 @@ public class AuthController : ControllerBase
             ClientSecrets = new ClientSecrets { ClientId = _clientId, ClientSecret = _clientSecret }
         });
 
-        var token = await flow.ExchangeCodeForTokenAsync("user", code, _redirectUri, CancellationToken.None);
+        // Exchange code for token. Use a generic key for the store since we'll save to DB ourselves.
+        var token = await flow.ExchangeCodeForTokenAsync("default", code, _redirectUri, CancellationToken.None);
         
-        // We need the email to save the token. Google's token response doesn't have it by default.
-        // We'd usually use an IdToken or call the UserInfo API.
-        // For now, let's just assume we'll get the email from the UserInfo API.
         var email = await GetUserEmailAsync(token.AccessToken);
+        Console.WriteLine($"[AUTH] Callback received for email: {email}");
 
         var userToken = await _db.UserTokens.FirstOrDefaultAsync(t => t.Email == email);
         if (userToken == null)

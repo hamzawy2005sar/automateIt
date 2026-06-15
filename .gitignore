@@ -29,6 +29,15 @@ AutomateIt.API/firebase_service_account.json
 AutomateIt.API/gmail_credentials.json
 AutomateIt.API/token.json/
 
+# Exclude tunnel tools and logs
+bore.exe
+bore.zip
+cloudflared.exe
+db_status.txt
+tunnel.txt
+*.txt
+*.log
+
 # OS files
 .DS_Store
 Thumbs.db

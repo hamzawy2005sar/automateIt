@@ -19,10 +19,17 @@ public class GroqService
         _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
     }
 
-    public async Task<string> GenerateReplyAsync(string emailContent)
+    public async Task<string> GenerateReplyAsync(string emailContent, string? aiRules = null)
     {
         var url = "https://api.groq.com/openai/v1/chat/completions";
         
+        var systemMessage = "أنت مساعد تنفيذي ذكي ومحترف للغاية. مهمتك هي قراءة البريد الإلكتروني وكتابة رد رسمي، مهني، ولبق جداً. يجب أن يكون الرد مباشراً ويعكس احترافية عالية. استخدم لغة فصحى راقية ومناسبة لبيئة العمل. اكتب نص الرد فقط دون أي مقدمات. هام جداً: تجنب استخدام الفواصل (،) والنقاط (.) وعلامات الترقيم بشكل نهائي في الرد لأنها تسبب مشكلة في عرض النص العربي. يجب عليك دائماً أن تنهي رسالتك بتوقيع احترافي يحمل اسم (حمزة).";
+        
+        if (!string.IsNullOrWhiteSpace(aiRules))
+        {
+            systemMessage += $"\n\n**تعليمات إضافية يجب الالتزام بها:**\n{aiRules}";
+        }
+
         var body = new
         {
             model = "llama-3.1-8b-instant",
@@ -31,7 +38,7 @@ public class GroqService
                 new 
                 {
                     role = "system",
-                    content = "أنت مساعد ذكي. اقرأ هذا الإيميل واكتب رداً مناسباً ومهنياً باللغة المطلوبة (يفضل العربية إذا كان النص عربياً). اكتب الرد فقط بدون أي شرح إضافي. يجب عليك دائماً أن تنهي رسالتك وتوقع باسم (حمزة)."
+                    content = systemMessage
                 },
                 new
                 {

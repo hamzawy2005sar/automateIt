@@ -20,4 +20,10 @@
     <ProjectReference Include="..\AutomateIt.Infrastructure\AutomateIt.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="firebase_service_account.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

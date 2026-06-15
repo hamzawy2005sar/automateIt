@@ -44,6 +44,28 @@ public class GoogleAuthService
             IssuedUtc = DateTime.UtcNow.AddSeconds(-(60 * 60)) // Approximation
         };
 
-        return new UserCredential(flow, email, tokenResponse);
+        var credential = new UserCredential(flow, email, tokenResponse);
+
+        // ✅ Check and Refresh token if expired
+        if (credential.Token.IsExpired(global::Google.Apis.Util.SystemClock.Default))
+        {
+            try
+            {
+                if (await credential.RefreshTokenAsync(CancellationToken.None))
+                {
+                    userToken.AccessToken = credential.Token.AccessToken;
+                    userToken.ExpiryUtc = DateTime.UtcNow.AddSeconds(credential.Token.ExpiresInSeconds ?? 3600);
+                    await _db.SaveChangesAsync();
+                    Console.WriteLine($"🔄 Token refreshed and saved for {email}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Failed to refresh token for {email}: {ex.Message}");
+                // We let it continue, it will fail later with a clear Auth exception if needed
+            }
+        }
+
+        return credential;
     }
 }

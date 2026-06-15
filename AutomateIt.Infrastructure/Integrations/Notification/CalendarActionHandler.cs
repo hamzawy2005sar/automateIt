@@ -77,7 +77,11 @@ public class CalendarActionHandler : IActionHandler
     {
         try
         {
-            var email = automation.UserEmail ?? "user";
+            var email = automation.UserEmail;
+            if (string.IsNullOrEmpty(email))
+            {
+                throw new Exception("Automation has no UserEmail assigned.");
+            }
             var credential = await _authService.GetCredentialsAsync(email);
             var service = new CalendarService(new BaseClientService.Initializer
             {

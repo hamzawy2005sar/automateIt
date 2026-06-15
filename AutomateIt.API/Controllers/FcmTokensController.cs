@@ -19,6 +19,7 @@ public class FcmTokensController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> RegisterToken([FromBody] RegisterTokenRequest request)
     {
+        Console.WriteLine($"📱 [FCM] RegisterToken called for device: {request.DeviceInfo}");
         if (string.IsNullOrWhiteSpace(request.Token))
             return BadRequest("Token is required");
 
@@ -67,6 +68,49 @@ public class FcmTokensController : ControllerBase
             .ToListAsync();
 
         return Ok(tokens);
+    }
+
+    [HttpGet("test")]
+    public async Task<IActionResult> SendTestNotification()
+    {
+        Console.WriteLine("🚀 [FCM] SendTestNotification called!");
+        var tokens = await _context.FcmTokens.Where(t => t.IsActive).ToListAsync();
+        if (!tokens.Any()) return BadRequest("No active tokens found");
+
+        int success = 0;
+        foreach (var token in tokens)
+        {
+            try
+            {
+                var message = new FirebaseAdmin.Messaging.Message
+                {
+                    Token = token.Token,
+                    Notification = new FirebaseAdmin.Messaging.Notification
+                    {
+                        Title = "Test Notification",
+                        Body = "If you see this, notifications are working! 🚀"
+                    },
+                    Android = new FirebaseAdmin.Messaging.AndroidConfig
+                    {
+                        Priority = FirebaseAdmin.Messaging.Priority.High,
+                        Notification = new FirebaseAdmin.Messaging.AndroidNotification
+                        {
+                            Sound = "default",
+                            ChannelId = "automations"
+                        }
+                    }
+                };
+                await FirebaseAdmin.Messaging.FirebaseMessaging.DefaultInstance.SendAsync(message);
+                success++;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TestFCM] Failed for {token.Id}: {ex.Message}");
+                return BadRequest(new { message = $"Firebase Error for token {token.Id.ToString().Substring(0,8)}: {ex.Message}" });
+            }
+        }
+
+        return Ok(new { message = $"Sent {success} test notifications" });
     }
 
     public class RegisterTokenRequest

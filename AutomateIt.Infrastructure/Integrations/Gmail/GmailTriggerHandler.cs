@@ -20,7 +20,11 @@ public class GmailTriggerHandler : ITriggerHandler
 
     private async Task<GmailService> GetGmailServiceAsync(Automation automation)
     {
-        var email = automation.UserEmail ?? "user";
+        var email = automation.UserEmail;
+        if (string.IsNullOrEmpty(email))
+        {
+            throw new Exception("Automation has no UserEmail assigned.");
+        }
         var credential = await _authService.GetCredentialsAsync(email);
 
         return new GmailService(new BaseClientService.Initializer
@@ -38,12 +42,14 @@ public class GmailTriggerHandler : ITriggerHandler
         // نجيب الإيميلات الغير مقروءة، الموجودة في صندوق "الأساسي" (Primary) فقط
         // ونتجاهل الإيميلات من (no-reply) أو الإعلانات ومواقع التواصل مثل لينكد إن
         var request = service.Users.Messages.List("me");
-        request.Q = "is:unread category:primary -from:noreply -from:no-reply -from:donotreply";
+        request.Q = "is:unread -from:noreply -from:no-reply -from:donotreply -category:promotions -category:social -from:linkedin.com";
         request.MaxResults = 5;
 
         var response = await request.ExecuteAsync();
         if (response.Messages == null) return results;
 
+        var email = automation.UserEmail;
+        Console.WriteLine($"🔍 Checking Gmail for {email ?? "unknown"}... found {response.Messages.Count} unread messages.");
         foreach (var msg in response.Messages)
         {
             var fullMsg = await service.Users.Messages
@@ -53,6 +59,8 @@ public class GmailTriggerHandler : ITriggerHandler
             var subject = headers.FirstOrDefault(h => h.Name == "Subject")?.Value ?? "";
             var from    = headers.FirstOrDefault(h => h.Name == "From")?.Value ?? "";
             var body    = GetBody(fullMsg.Payload);
+
+            Console.WriteLine($"   📬 Found Email: From={from}, Subject={subject}");
 
             results.Add(new Dictionary<string, string>
             {
@@ -64,7 +72,8 @@ public class GmailTriggerHandler : ITriggerHandler
 
             // Mark as read to avoid processing it again next minute!
             var mods = new ModifyMessageRequest { RemoveLabelIds = new[] { "UNREAD" } };
-            await service.Users.Messages.Modify(mods, "me", msg.Id).ExecuteAsync();        }
+            await service.Users.Messages.Modify(mods, "me", msg.Id).ExecuteAsync();
+        }
 
         return results;
     }
